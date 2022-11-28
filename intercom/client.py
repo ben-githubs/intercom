@@ -26,6 +26,11 @@ class Client:
     def contacts(self):
         from .service import Contact
         return Contact(self)
+    
+    @property
+    def teams(self):
+        from .service import Team
+        return Team(self)
 
     def get(self, endpoint, **kwargs):
         """ PUT Request: **kwargs are passed as URL parameters.

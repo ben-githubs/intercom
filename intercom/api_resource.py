@@ -408,7 +408,7 @@ def object_hook(data: dict, client=None):
     if obj_type == 'conversation':
         # There's two possibilities: this is a conversation or a source obj. FML
         if 'delivered_as' in data:
-            return Source(**data)
+            return Source(client, **data)
         else:
             return Conversation(client, **data)
 
