@@ -42,19 +42,3 @@ class All:
     def all(self):
         endpoint = self.collection
         return self.client.get(endpoint)
-
-class AllCursor:
-    def all(self):
-        results = list()
-        starting_after = ''
-        first_run = True
-        i = 0
-        while starting_after or first_run:
-            first_run = False
-            if starting_after:
-                resp = self.client.get(self.collection, starting_after = starting_after)
-            else:
-                resp = self.client.get(self.collection)
-            results += resp
-            starting_after = deep_get(resp, 'pages.next.starting_after')
-        return results

@@ -94,6 +94,17 @@ class Admin(Resource):
     job_title: str = ''
     avatar: str = ''
 
+    def set_away(self, away, reassign=False):
+        """ Sets the Intercom away status of this Admin.
+            away (bool): whether or not the admin is away
+            reassign (bool): should new replies to their convos be reassigned?
+        """
+        data = {
+            'away_mode_enabled': away,
+            'away_mode_reassign': reassign
+        }
+        self.client.put(f"admins/{self.id}/away", body=data)
+
 @dataclass
 class AddressableList:
     __api_type__ = 'list'
@@ -374,14 +385,17 @@ def object_hook(data: dict, client=None):
     }
 
     if obj_type in mapping:
-        return mapping[obj_type](**data)
+        #TODO: Find a better way to add client to the Resource
+        obj = mapping[obj_type](**data)
+        obj.client = client
+        return obj
     
     if obj_type == 'conversation':
         # There's two possibilities: this is a conversation or a source obj. FML
         if 'delivered_as' in data:
             return Source(**data)
         else:
-            return Conversation(**data)
+            return Conversation(client, **data)
 
     if obj_type == 'list':
         # Check pagination
@@ -406,6 +420,7 @@ def object_hook(data: dict, client=None):
         else:
             key += 's'
         return data.get(key)
+    
     # Return dictionary if none of the above fit
     if obj_type:
         data['type'] = obj_type
