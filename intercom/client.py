@@ -60,7 +60,7 @@ class Client:
         except:
             print(resp.json())
             raise resp.raise_for_status()
-        return resp.json(object_hook = object_hook)
+        return resp.json(object_hook = lambda x: object_hook(x, self))
     
     @property
     def __headers(self):

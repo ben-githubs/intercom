@@ -40,14 +40,8 @@ class Find(object):
 
 class All:
     def all(self):
-        results = list()
         endpoint = self.collection
-        while endpoint:
-            endpoint = endpoint.replace(self.client.host, '')
-            resp = self.client.get(endpoint)
-            results += resp
-            endpoint = deep_get(resp, 'pages.next')
-        return results
+        return self.client.get(endpoint)
 
 class AllCursor:
     def all(self):

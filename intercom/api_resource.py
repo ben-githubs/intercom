@@ -7,21 +7,47 @@ class Resource:
         if args:
             self.client = args[0]
 
-    def from_dict(self, _dict):
-        for attr, value in _dict.items():
-            if isinstance(value, dict):
-                resrc = Resource(self.client)
-                value = resrc.from_dict(value)
-            attr = attr.lower().strip().replace(' ', '_')
-            setattr(self, attr, value)
-        return self
-
 def unix_to_datetime(obj, *args):
     # Convert UNIX timestamp to Python datetime
     for attr in args:
         val = getattr(obj, attr)
         if val: # Don't try to make datetime from None
             setattr(obj, attr, datetime.utcfromtimestamp(val))
+
+
+class PagedList:
+    def __init__(self, client, data: list, total_count: int, pages: dict):
+        self.client = client
+        self.length = total_count
+        self.next = ''
+        if pages.get('next'):
+            self.next = pages['next'].replace(client.host, '')
+        self.items = data
+
+    def __next_page(self):
+        if self.next:
+            new_list = self.client.get(self.next)
+            self.next = new_list.next
+            self.items += new_list.items
+    
+    def __len__(self):
+        return self.length
+    
+    def __iter__(self):
+        self.n = 0
+        return self
+    
+    def __next__(self):
+        if self.n < self.length:
+            if self.n == len(self.items):
+                self.__next_page()
+            self.n += 1
+            return self.items[self.n-1]
+        else:
+            raise StopIteration
+    
+
+
 
 """
     Level 1 Objects - No dependence on any others
@@ -297,7 +323,7 @@ class Conversation(Resource):
         unix_to_datetime('created_at', 'updated_at', 'waiting_since', 'snoozed_until')
 
 
-def object_hook(data: dict):
+def object_hook(data: dict, client=None):
     """ 'data' is a dictionary produced by the json deserialization. In this dictionary, Intercom 
     probably added a 'type' key. Using that, we can convert some of the dictionaries into actual
     objects.
@@ -330,6 +356,10 @@ def object_hook(data: dict):
             return Conversation(**data)
 
     if obj_type == 'list':
+        # Check pagination
+        if 'pages' in data and 'next' in data['pages']:
+            data['data'] = PagedList(client, data['data'], data['total_count'], data['pages'])
+
         # There's 2 types of list: regular lists and AddressableLists. We need to handle both.
         if 'url' in data: # Returns true for AddressableList
             return AddressableList(**data)
