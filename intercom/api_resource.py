@@ -15,6 +15,37 @@ def unix_to_datetime(obj, *args):
             setattr(obj, attr, datetime.utcfromtimestamp(val))
 
 
+class CursorList:
+    def __init__(self, client, endpoint, data: list, total_count: int, pages: dict):
+        self.client = client
+        self.url = endpoint
+        self.length = total_count
+        self.starting_after = pages.get('next', dict()).get('starting_after')
+        self.items = data
+
+    def __next_page(self):
+        if self.starting_after:
+            new_list = self.client.get(f"{self.url}?starting_after={self.starting_after}")
+            self.starting_after = new_list.starting_after
+            self.items += new_list.items
+    
+    def __len__(self):
+        return self.length
+    
+    def __iter__(self):
+        self.n = 0
+        return self
+    
+    def __next__(self):
+        if self.n < self.length:
+            if self.n == len(self.items):
+                self.__next_page()
+            self.n += 1
+            return self.items[self.n-1]
+        else:
+            raise StopIteration
+    
+
 class PagedList:
     def __init__(self, client, data: list, total_count: int, pages: dict):
         self.client = client
@@ -45,9 +76,6 @@ class PagedList:
             return self.items[self.n-1]
         else:
             raise StopIteration
-    
-
-
 
 """
     Level 1 Objects - No dependence on any others
@@ -357,8 +385,11 @@ def object_hook(data: dict, client=None):
 
     if obj_type == 'list':
         # Check pagination
-        if 'pages' in data and 'next' in data['pages']:
+        if 'pages' in data and isinstance(data['pages'].get('next'), str):
             data['data'] = PagedList(client, data['data'], data['total_count'], data['pages'])
+        elif 'pages' in data and 'next' in data['pages'] and 'starting_after' in data['pages'].get('next'):
+            data['data'] = CursorList(client, 'contacts', data['data'], data['total_count'], data['pages'])
+
 
         # There's 2 types of list: regular lists and AddressableLists. We need to handle both.
         if 'url' in data: # Returns true for AddressableList

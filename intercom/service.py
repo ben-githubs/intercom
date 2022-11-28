@@ -11,5 +11,5 @@ class Admin(BaseService, All):
 class Company(BaseService, All):
     collection = 'companies'
 
-class Contact(BaseService, Find, AllCursor):
+class Contact(BaseService, Find, All):
     collection = 'contacts'
