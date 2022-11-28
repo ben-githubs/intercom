@@ -3,9 +3,8 @@ from datetime import datetime
 from typing import List, Union
 
 class Resource:
-    def __init__(self, *args, **kwargs):
-        if args:
-            self.client = args[0]
+    def __init__(self, client):
+        self.client = client
 
 def unix_to_datetime(obj, *args):
     # Convert UNIX timestamp to Python datetime
@@ -84,6 +83,7 @@ class PagedList:
 @dataclass
 class Admin(Resource):
     __api_type__ = 'admin'
+    client: object
     id: str
     name: str
     email: str
@@ -108,6 +108,7 @@ class Admin(Resource):
 @dataclass
 class AddressableList:
     __api_type__ = 'list'
+    client: object
     url: str
     total_count: int
     has_more: bool
@@ -116,6 +117,7 @@ class AddressableList:
 @dataclass
 class Bot(Resource):
     __api_type__ = 'bot'
+    client: object
     id: str
     name: str
     email: str
@@ -123,6 +125,7 @@ class Bot(Resource):
 @dataclass
 class Segment(Resource):
     __api_type__ = 'segment'
+    client: object
     id: str
     name: str
     created_at: datetime = MISSING
@@ -133,6 +136,7 @@ class Segment(Resource):
 @dataclass
 class Statistics(Resource):
     __api_type__ = 'conversation_statistics'
+    client: object
     time_to_assignment: int
     time_to_admin_reply: int
     time_to_first_close: int
@@ -162,6 +166,7 @@ class Statistics(Resource):
 @dataclass
 class Location(Resource):
     __api_type__ = 'location'
+    client: object
     country: str
     country_code: str
     continent_code: str
@@ -171,30 +176,35 @@ class Location(Resource):
 @dataclass
 class Plan(Resource):
     __api_type__ = 'plan'
+    client: object
     id: str
     name: str
 
 @dataclass
 class SLASummary(Resource):
     __api_type__ = 'conversation_sla_summary'
+    client: object
     sla_name: str
     sla_status: str
 
 @dataclass
 class SocialProfile(Resource):
     __api_type__ = 'social_profile'
+    client: object
     name: str
     url: str
 
 @dataclass
 class Tag(Resource):
     __api_type__ = 'tag'
+    client: object
     id: str
     name: str
 
 @dataclass
 class Team(Resource):
     __api_type__ = 'team'
+    client: object
     id: str
     name: str
     admin_ids: List[str]
@@ -202,6 +212,7 @@ class Team(Resource):
 @dataclass
 class User(Resource):
     __api_type__ = 'user'
+    client: object
     id: str
     name: str
     email: str
@@ -213,6 +224,7 @@ class User(Resource):
 @dataclass
 class Company(Resource):
     __api_type__ = 'company'
+    client: object
     id: str
     company_id: str = ''
     app_id: str = ''
@@ -240,6 +252,7 @@ class Company(Resource):
 @dataclass
 class Contact(Resource):
     __api_type__ = 'contact'
+    client: object
     id: str
     workspace_id: str = field(default=MISSING)
     external_id: str = field(default=MISSING)
@@ -303,6 +316,7 @@ class Contact(Resource):
 @dataclass
 class ConversationPart(Resource):
     __api_type__ = 'conversation_part'
+    client: object
     id: str
     part_type: str
     body: str
@@ -319,6 +333,7 @@ class ConversationPart(Resource):
 
 @dataclass
 class Source(Resource):
+    client: object
     id: str
     delivered_as: str
     subject: str
@@ -334,6 +349,7 @@ class Source(Resource):
 @dataclass
 class Conversation(Resource):
     __api_type__ = 'conversation'
+    client: object
     id: str
     created_at: datetime
     updated_at: datetime
@@ -386,8 +402,7 @@ def object_hook(data: dict, client=None):
 
     if obj_type in mapping:
         #TODO: Find a better way to add client to the Resource
-        obj = mapping[obj_type](**data)
-        obj.client = client
+        obj = mapping[obj_type](client, **data)
         return obj
     
     if obj_type == 'conversation':
