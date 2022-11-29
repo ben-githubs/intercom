@@ -5,6 +5,10 @@ from typing import List, Union
 class Resource:
     def __init__(self, client):
         self.client = client
+    
+class Deletable(object):
+    def delete(self):
+        return self.client.delete(f"{self.__api_type_plural__}/{self.id}")
 
 def unix_to_datetime(obj, *args):
     # Convert UNIX timestamp to Python datetime
@@ -83,6 +87,7 @@ class PagedList:
 @dataclass
 class Admin(Resource):
     __api_type__ = 'admin'
+    __api_type_plural__ = 'admins'
     client: object
     id: str
     name: str
@@ -125,6 +130,7 @@ class Bot(Resource):
 @dataclass
 class Segment(Resource):
     __api_type__ = 'segment'
+    __api_type_plural__ = 'segments'
     client: object
     id: str
     name: str
@@ -176,6 +182,7 @@ class Location(Resource):
 @dataclass
 class Plan(Resource):
     __api_type__ = 'plan'
+    __api_type_plural__ = 'plans'
     client: object
     id: str
     name: str
@@ -197,6 +204,7 @@ class SocialProfile(Resource):
 @dataclass
 class Tag(Resource):
     __api_type__ = 'tag'
+    __api_type_plural__ = 'tags'
     client: object
     id: str
     name: str
@@ -204,6 +212,7 @@ class Tag(Resource):
 @dataclass
 class Team(Resource):
     __api_type__ = 'team'
+    __api_type_plural__ = 'teams'
     client: object
     id: str
     name: str
@@ -212,6 +221,7 @@ class Team(Resource):
 @dataclass
 class User(Resource):
     __api_type__ = 'user'
+    __api_type_plural__ = 'users'
     client: object
     id: str
     name: str
@@ -224,6 +234,7 @@ class User(Resource):
 @dataclass
 class Company(Resource):
     __api_type__ = 'company'
+    __api_type_plural__ = 'companies'
     client: object
     id: str
     company_id: str = ''
@@ -250,8 +261,9 @@ class Company(Resource):
         unix_to_datetime(self, 'created_at', 'remote_created_at', 'updated_at', 'last_request_at')
 
 @dataclass
-class Contact(Resource):
+class Contact(Resource, Deletable):
     __api_type__ = 'contact'
+    __api_type_plural__ = 'contacts'
     client: object
     id: str
     workspace_id: str = field(default=MISSING)
@@ -316,6 +328,7 @@ class Contact(Resource):
 @dataclass
 class ConversationPart(Resource):
     __api_type__ = 'conversation_part'
+    __api_type_plural__ = 'conversation_parts'
     client: object
     id: str
     part_type: str
@@ -349,6 +362,7 @@ class Source(Resource):
 @dataclass
 class Conversation(Resource):
     __api_type__ = 'conversation'
+    __api_type_plural__ = 'conversations'
     client: object
     id: str
     created_at: datetime

@@ -60,6 +60,12 @@ class Create:
 
         return self.client.post(self.collection, body=data)
 
+class Delete:
+    def delete(self, id: str):
+        id = str(id)
+        endpoint = self.collection + '/' + id
+        return self.client.delete(endpoint)
+
 def object_hook(data):
     if isinstance(data, datetime):
         return time.mktime(data.timetuple())

@@ -48,7 +48,7 @@ class Client:
     def delete(self, endpoint):
         """ DELETE Request
         """
-        r = requests.delete(f"{Client.host}/{endpoint}")
+        r = requests.delete(f"{Client.host}/{endpoint}", headers=self.__headers)
         return self.__parse_resp(r)
     
     def put(self, endpoint, body):

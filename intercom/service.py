@@ -1,4 +1,4 @@
-from .api_operations import Get, Find, All, Create
+from .api_operations import All, Create, Delete, Get, Find
 
 class BaseService(Get, All):
     
@@ -12,7 +12,7 @@ class Admin(BaseService):
 class Company(BaseService):
     collection = 'companies'
 
-class Contact(BaseService, Find, Create):
+class Contact(BaseService, Find, Create, Delete):
     collection = 'contacts'
 
 class Team(BaseService):
