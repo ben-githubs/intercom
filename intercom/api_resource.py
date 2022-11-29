@@ -422,7 +422,7 @@ def object_hook(data: dict, client=None):
 
         # There's 2 types of list: regular lists and AddressableLists. We need to handle both.
         if 'url' in data: # Returns true for AddressableList
-            return AddressableList(**data)
+            return AddressableList(client, **data)
         else:
             return data.get('data', [])
     if obj_type.endswith('.list'):

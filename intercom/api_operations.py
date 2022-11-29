@@ -1,3 +1,9 @@
+from datetime import datetime
+import json
+import time
+
+from schema import Schema
+
 def deep_exists(obj, path):
     fields = path.split('.')
     for field in fields:
@@ -42,3 +48,19 @@ class All:
     def all(self):
         endpoint = self.collection
         return self.client.get(endpoint)
+
+
+class Create:
+    def new(self, **kwargs):
+        # Validate input arguments
+        self.schemas.new.validate(kwargs)
+
+        # Convert to JSON
+        data = json.dumps(kwargs, default=object_hook)
+
+        return self.client.post(self.collection, body=data)
+
+def object_hook(data):
+    if isinstance(data, datetime):
+        return time.mktime(data.timetuple())
+    return data

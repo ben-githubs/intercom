@@ -24,8 +24,9 @@ class Client:
     
     @property
     def contacts(self):
-        from .service import Contact
-        return Contact(self)
+        from .service import Contact 
+        from .api_schemas import Contact as schema
+        return Contact(self, schema)
     
     @property
     def teams(self):
@@ -41,8 +42,7 @@ class Client:
     def post(self, endpoint, body):
         """ POST Request: body is the data to send in the request body.
         """
-        print(body)
-        r = requests.post(f"{Client.host}/{endpoint}", data=json.dumps(body), headers=self.__headers)
+        r = requests.post(f"{Client.host}/{endpoint}", data=body, headers=self.__headers)
         return self.__parse_resp(r)
     
     def delete(self, endpoint):
@@ -60,11 +60,15 @@ class Client:
     def __parse_resp(self, resp):
         """ Performs processing on the results of all api requests.
         """
+        has_error = False
         try:
             resp.raise_for_status()
         except:
+            has_error = True
             print(resp.json())
-            raise resp.raise_for_status()
+        if has_error:
+            resp.raise_for_status()
+
         return resp.json(object_hook = lambda x: object_hook(x, self))
     
     @property
